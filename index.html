@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperStylin - Demo</title>
+<style>
+  :root { --ink:#16130e; --paper:#faf7f0; --accent:#b3202c; --cyan:#0e7c86; --card:#ffffff; --line:#e3ddd0; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, 'Times New Roman', serif; background:var(--paper); color:var(--ink); }
+  header { padding:28px 20px 8px; text-align:center; }
+  header h1 { margin:0; font-size:42px; letter-spacing:1px; }
+  header h1 span { color:var(--accent); }
+  header p { margin:6px auto 0; max-width:560px; font-size:16px; }
+  .demo-flag { display:inline-block; margin-top:10px; padding:3px 10px; border:2px solid var(--ink); font-size:12px; letter-spacing:2px; }
+  main { max-width:980px; margin:0 auto; padding:16px; }
+  section { margin:26px 0; }
+  h2 { font-size:22px; border-bottom:3px solid var(--ink); padding-bottom:6px; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+  button { font-family:inherit; cursor:pointer; border:2px solid var(--ink); background:var(--card); padding:7px 14px; font-size:14px; }
+  button.active { background:var(--ink); color:var(--paper); }
+  button.go { background:var(--accent); border-color:var(--accent); color:#fff; font-size:16px; padding:10px 22px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  .item { background:var(--card); border:2px solid var(--line); padding:10px; text-align:center; }
+  .swatch { height:92px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); }
+  .swatch svg { width:64px; height:64px; }
+  .item .name { font-weight:bold; margin-top:8px; font-size:14px; }
+  .item .meta { font-size:12px; color:#5a5344; }
+  .outfit { display:flex; flex-wrap:wrap; gap:12px; margin-top:14px; }
+  .trend { background:var(--card); border:2px solid var(--line); padding:12px; margin:10px 0; }
+  .trend b { font-size:16px; }
+  form { display:grid; gap:8px; max-width:420px; }
+  input, select { font-family:inherit; font-size:14px; padding:8px; border:2px solid var(--line); background:#fff; }
+  .note { font-size:13px; color:#5a5344; max-width:640px; }
+  footer { text-align:center; padding:24px; font-size:13px; color:#5a5344; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Super<span>Stylin</span></h1>
+  <p>Put together new clothing combinations with your own clothing. Trends applied to what you already have, for any occasion.</p>
+  <div class="demo-flag">DEMO - SAMPLE WARDROBE, NOT REAL CLOTHES</div>
+</header>
+<main>
+  <section>
+    <h2>Your wardrobe</h2>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="grid"></div>
+    <p class="note">Demo items are drawn placeholders. In your own copy, each piece starts as a clean photo of one item laid out on the floor or bed, in full view. Not a picture of an open closet. The app cleans the photo up, puts it on a white background, and indexes it by category, color and occasion.</p>
+  </section>
+
+  <section>
+    <h2>Style me</h2>
+    <label>Occasion
+      <select id="occasion">
+        <option value="casual">Casual day</option>
+        <option value="work">Work</option>
+        <option value="night">Night out</option>
+        <option value="event">Big event</option>
+      </select>
+    </label>
+    <button class="go" id="styleBtn">Build an outfit</button>
+    <button id="shuffleBtn">New combo</button>
+    <div class="outfit" id="outfit"></div>
+  </section>
+
+  <section>
+    <h2>Trends, applied to your clothes</h2>
+    <div id="trends"></div>
+    <p class="note">Sample trend cards for the demo. Hit Apply and Style Me only builds outfits that use the trend, from pieces already in the wardrobe.</p>
+  </section>
+
+  <section>
+    <h2>Add a piece</h2>
+    <form id="addForm">
+      <input id="fName" placeholder="Name, like Blue Oxford Shirt" required>
+      <select id="fCat">
+        <option value="tops">Top</option>
+        <option value="bottoms">Bottom</option>
+        <option value="shoes">Shoes</option>
+        <option value="layers">Layer</option>
+        <option value="dresses">Dress</option>
+      </select>
+      <input id="fColor" placeholder="Color, like navy" required>
+      <select id="fOcc">
+        <option value="casual">Casual day</option>
+        <option value="work">Work</option>
+        <option value="night">Night out</option>
+        <option value="event">Big event</option>
+      </select>
+      <button type="submit">Add to wardrobe</button>
+    </form>
+    <p class="note">Your additions save in this browser only. Nothing uploads anywhere.</p>
+  </section>
+</main>
+<footer>SuperStylin demo. Runs fully on your machine. No accounts, no uploads, no tracking.</footer>
+
+<script>
+// Sample wardrobe. Synthetic demo data only. Edit this list to make it yours.
+const DEMO_ITEMS = [
+  { id:"d01", name:"White Tee",        cat:"tops",    color:"white",  occ:["casual","night"] },
+  { id:"d02", name:"Black Hoodie",     cat:"tops",    color:"black",  occ:["casual"] },
+  { id:"d03", name:"Blue Oxford Shirt",cat:"tops",    color:"blue",   occ:["work","event"] },
+  { id:"d04", name:"Red Knit Sweater", cat:"tops",    color:"red",    occ:["casual","work"] },
+  { id:"d05", name:"Slim Dark Jeans",  cat:"bottoms", color:"indigo", occ:["casual","night"] },
+  { id:"d06", name:"Khaki Chinos",     cat:"bottoms", color:"khaki",  occ:["work","casual"] },
+  { id:"d07", name:"Black Trousers",   cat:"bottoms", color:"black",  occ:["work","event","night"] },
+  { id:"d08", name:"White Sneakers",   cat:"shoes",   color:"white",  occ:["casual","night"] },
+  { id:"d09", name:"Brown Boots",      cat:"shoes",   color:"brown",  occ:["casual","work"] },
+  { id:"d10", name:"Black Heels",      cat:"shoes",   color:"black",  occ:["event","night"] },
+  { id:"d11", name:"Denim Jacket",     cat:"layers",  color:"blue",   occ:["casual","night"] },
+  { id:"d12", name:"Long Wool Coat",   cat:"layers",  color:"camel",  occ:["work","event"] },
+  { id:"d13", name:"Little Black Dress",cat:"dresses",color:"black", occ:["event","night"] },
+  { id:"d14", name:"Striped Midi Dress",cat:"dresses",color:"navy",  occ:["casual","work"] }
+];
+
+// Sample trend cards for the demo. Category, color and occasion do the work.
+const TRENDS = [
+  { name:"Red as the lead", note:"One strong red piece carries the whole look.", match:{ color:"red" } },
+  { name:"Denim on duty", note:"A denim layer over clean basics.", match:{ cat:"layers", color:"blue" } },
+  { name:"All black at night", note:"Black top to toe for after dark.", match:{ color:"black", occ:"night" } }
+];
+
+const GLYPH = {
+  tops:'<svg viewBox="0 0 100 100"><path d="M30 20 L10 35 L22 50 L30 45 L30 85 L70 85 L70 45 L78 50 L90 35 L70 20 Q50 32 30 20 Z" fill="CUR" stroke="#16130e" stroke-width="3"/></svg>',
+  bottoms:'<svg viewBox="0 0 100 100"><path d="M28 15 L72 15 L76 85 L58 85 L50 40 L42 85 L24 85 Z" fill="CUR" stroke="#16130e" stroke-width="3"/></svg>',
+  shoes:'<svg viewBox="0 0 100 100"><path d="M12 68 Q40 68 55 55 L62 48 Q88 55 88 68 L88 76 L12 76 Z" fill="CUR" stroke="#16130e" stroke-width="3"/></svg>',
+  layers:'<svg viewBox="0 0 100 100"><path d="M32 15 L14 28 L22 88 L40 88 L40 35 L60 35 L60 88 L78 88 L86 28 L68 15 L50 26 Z" fill="CUR" stroke="#16130e" stroke-width="3"/></svg>',
+  dresses:'<svg viewBox="0 0 100 100"><path d="M38 14 L62 14 L56 38 L74 86 L26 86 L44 38 Z" fill="CUR" stroke="#16130e" stroke-width="3"/></svg>'
+};
+const SWATCH = { white:"#f4f1e8", black:"#232323", blue:"#3a5f9e", red:"#b3202c", indigo:"#2e3a67",
+  khaki:"#b8a77a", brown:"#6f4a2f", camel:"#c19a5b", navy:"#26355e" };
+
+const store = {
+  load() {
+    try { return JSON.parse(localStorage.getItem("superstylin-added") || "[]"); }
+    catch (e) { return []; }
+  },
+  save(items) { localStorage.setItem("superstylin-added", JSON.stringify(items)); }
+};
+let added = store.load();
+let activeFilter = "all";
+let activeTrend = null;
+let lastSeed = 1;
+
+function allItems() { return DEMO_ITEMS.concat(added); }
+
+function card(item) {
+  const div = document.createElement("div");
+  div.className = "item";
+  const glyph = (GLYPH[item.cat] || GLYPH.tops).replace("CUR", SWATCH[item.color] || "#cccccc");
+  div.innerHTML = '<div class="swatch">' + glyph + '</div><div class="name"></div><div class="meta"></div>';
+  div.querySelector(".name").textContent = item.name;
+  div.querySelector(".meta").textContent = item.cat + " - " + item.color;
+  return div;
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  allItems()
+    .filter(i => activeFilter === "all" || i.cat === activeFilter)
+    .forEach(i => grid.appendChild(card(i)));
+}
+
+function renderFilters() {
+  const cats = ["all","tops","bottoms","shoes","layers","dresses"];
+  const box = document.getElementById("filters");
+  box.innerHTML = "";
+  cats.forEach(c => {
+    const b = document.createElement("button");
+    b.textContent = c === "all" ? "All" : c[0].toUpperCase() + c.slice(1);
+    if (c === activeFilter) b.className = "active";
+    b.onclick = () => { activeFilter = c; renderFilters(); renderGrid(); };
+    box.appendChild(b);
+  });
+}
+
+function pick(list, seed) {
+  if (!list.length) return null;
+  return list[Math.abs(seed) % list.length];
+}
+
+function buildOutfit() {
+  const occ = document.getElementById("occasion").value;
+  let pool = allItems().filter(i => i.occ.includes(occ));
+  if (activeTrend) {
+    const m = activeTrend.match;
+    const hit = pool.filter(i =>
+      (!m.cat || i.cat === m.cat) && (!m.color || i.color === m.color) && (!m.occ || i.occ.includes(m.occ)));
+    if (hit.length) {
+      const forcedCat = hit[0].cat;
+      pool = pool.filter(i => i.cat !== forcedCat).concat(hit);
+    }
+  }
+  const by = c => pool.filter(i => i.cat === c);
+  const parts = [];
+  const dress = pick(by("dresses"), lastSeed);
+  if (dress && lastSeed % 2 === 0) {
+    parts.push(dress);
+  } else {
+    parts.push(pick(by("tops"), lastSeed), pick(by("bottoms"), lastSeed + 1));
+  }
+  parts.push(pick(by("shoes"), lastSeed + 2));
+  const layer = pick(by("layers"), lastSeed + 3);
+  if (layer && lastSeed % 3 !== 0) parts.push(layer);
+  const box = document.getElementById("outfit");
+  box.innerHTML = "";
+  parts.filter(Boolean).forEach(i => box.appendChild(card(i)));
+  if (!parts.filter(Boolean).length) {
+    box.textContent = "No pieces match that occasion yet. Add one above.";
+  }
+}
+
+function renderTrends() {
+  const box = document.getElementById("trends");
+  box.innerHTML = "";
+  TRENDS.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "trend";
+    const b = document.createElement("b"); b.textContent = t.name;
+    const p = document.createElement("p"); p.textContent = t.note;
+    const btn = document.createElement("button");
+    btn.textContent = activeTrend === t ? "Applied" : "Apply";
+    btn.onclick = () => { activeTrend = activeTrend === t ? null : t; renderTrends(); buildOutfit(); };
+    div.appendChild(b); div.appendChild(p); div.appendChild(btn);
+    box.appendChild(div);
+  });
+}
+
+document.getElementById("styleBtn").onclick = () => { lastSeed = Date.now() % 997; buildOutfit(); };
+document.getElementById("shuffleBtn").onclick = () => { lastSeed += 7; buildOutfit(); };
+document.getElementById("addForm").onsubmit = (e) => {
+  e.preventDefault();
+  const item = {
+    id: "u" + Date.now(),
+    name: document.getElementById("fName").value.trim(),
+    cat: document.getElementById("fCat").value,
+    color: document.getElementById("fColor").value.trim().toLowerCase(),
+    occ: [document.getElementById("fOcc").value]
+  };
+  if (!item.name || !item.color) return;
+  added.push(item); store.save(added);
+  e.target.reset(); renderGrid();
+};
+
+renderFilters(); renderGrid(); renderTrends(); buildOutfit();
+</script>
+</body>
+</html>
